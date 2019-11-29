@@ -1,8 +1,9 @@
-# Keyboard connector app
+# Keyboard / Mouse connector apps
 
-This program should work out of the box on Windows 2000 or later.
-The program grabs all keystrokes and releases done at a computer to allow for
-recording keyboard events for example while closed-source stimulus presentation
+These programs grab all input events
+(keystrokes and releases, mouse clicks, mouse movements)
+done at a computer to allow for
+recording input events for example while closed-source stimulus presentation
 software is running.
 
 Note that no passwords or personal information should be entered while this
@@ -11,22 +12,25 @@ Also keep in mind that this program must run on the stimulus presentation PC.
 
 # Usage
 
-1. Start the Keyboard app. You should see a window like the following.
+1. Start the Keyboard / Mouse app. You should see a window like the following.
    ![keyboard.png](keyboard.png)
 
-2. You should now have a stream on your lab network that has name "Keyboard" and
-   type "Markers".
-   The stream contains a single channel of irregular sampling rate with
-   string-formatted values each time a key is pressed or released.
+2. You should now have a stream on your lab network that has
+   name "Keyboard" and type "Markers" (Keyboard) /
+   two streams "MouseButtons" with type "Markers" and "MousePosition" (Mouse).
+   The marker streams contain a single channel of irregular sampling rate with
+   string-formatted values each time a key/mouse button is pressed or released.
+   The "MousePosition" stream is an irregularly sampled streams with the X and
+   Y positions.
 
 
-# Event Names
+# Keyboard Event Names
 The following list contains the names assigned to the various key codes
 (corresponding to Windows virtual key codes in the same order).
 
 The events are of the form "KEYNAME pressed" or "KEYNAME released":
 
-/```
+```
 RESERVED00, LBUTTON, RBUTTON, CANCEL, MBUTTON, XBUTTON1, XBUTTON2, BELL, BACK,
 TAB, RESERVED0A, RESERVED0B, CLEAR, RETURN, RESERVED0E, RESERVED0F, SHIFT,
 CONTROL, MENU, PAUSE, CAPITAL, KANA, RESERVED16, JUNJA, FINAL, KANJI,
@@ -61,3 +65,15 @@ OEM_JUMP, OEM_PA1, OEM_PA2, OEM_PA3, OEM_WSCTRL, OEM_CUSEL, OEM_ATTN,
 OEM_FINISH, OEM_COPY, OEM_AUTO, OEM_ENLW, OEM_BACKTAB, ATTN, CRSEL, EXSEL,
 EREOF, PLAY, ZOOM, NONAME, PA1, OEM_CLEAR, RESERVEDFF
 ```
+
+# Mouse event names
+
+The events are of the form "ButtonName pressed" or "ButtonName released":
+
+- MouseButtonLeft
+- MouseButtonRight
+- MouseButtonMiddle
+- MouseButtonX*n* where *n* is the index of the additional mouse button
+- MouseWheelUp*n* where *n* is the scroll distance (default 120)
+- MouseWheelLeft
+- MouseWheelRight
