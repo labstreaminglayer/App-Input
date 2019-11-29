@@ -3,7 +3,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-
 // names for the Windows virtual-key codes
 const std::string key_names[256] = {"RESERVED00", "LBUTTON", "RBUTTON", "CANCEL", "MBUTTON",
 	"XBUTTON1", "XBUTTON2", "BELL", "BACK", "TAB", "RESERVED0A", "RESERVED0B", "CLEAR", "RETURN",
