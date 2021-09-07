@@ -1,0 +1,86 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: ['*']
+    tags:
+    - v*.*
+  pull_request:
+    branches:
+    - master
+  release:
+    types: ['created']
+
+env:
+  LSL_RELEASE_URL: 'https://github.com/sccn/liblsl/releases/download/v1.15.2'
+  LSL_RELEASE: '1.15.2'
+
+defaults:
+  run:
+    shell: bash
+
+# Check qt_ver on # https://download.qt.io/online/qtsdkrepository/
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - name: "windows-x64"
+          os: "windows-latest"
+          cmake_extra: "-T v142,host=x86"
+          arch: "amd64"
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Download liblsl (Windows)
+      if: matrix.config.os == 'windows-latest'
+      run: |
+           curl -L ${LSL_RELEASE_URL}/liblsl-${LSL_RELEASE}-Win_${{ matrix.config.arch}}.zip -o liblsl.zip
+           7z x liblsl.zip -oLSL
+
+    - name: Download liblsl (macOS)
+      if: startsWith(matrix.config.os, 'macos-')
+      run: brew install labstreaminglayer/tap/lsl
+
+    - name: Configure CMake
+      run: |
+           cmake --version
+           cmake -S . -B build \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_INSTALL_PREFIX=${PWD}/install \
+                -DCPACK_PACKAGE_DIRECTORY=${PWD}/package \
+                -DLSL_INSTALL_ROOT=$PWD/LSL/ \
+                -DCPACK_DEBIAN_PACKAGE_SHLIBDEPS=ON \
+                -DCPACK_DEBIAN_PACKAGE_DEPENDS=1 \
+                ${{ matrix.config.cmake_extra }}
+
+    - name: make
+      run: cmake --build build --config Release -j --target install
+
+    - name: package
+      run: |
+           export LD_LIBRARY_PATH=$Qt5_DIR/lib:$Qt6_DIR/lib:$LD_LIBRARY_PATH
+           cmake --build build --config Release -j --target package
+           cmake -E remove_directory package/_CPack_Packages
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: pkg-${{ matrix.config.name }}
+        path: package
+
+    - name: upload to release page
+      if: github.event_name == 'release'
+      env:
+        TOKEN: "token ${{ secrets.GITHUB_TOKEN }}"
+        UPLOAD_URL: ${{ github.event.release.upload_url }}
+      run: |
+              UPLOAD_URL=${UPLOAD_URL%\{*} # remove "{name,label}" suffix
+              for pkg in package/*.*; do
+                NAME=$(basename $pkg)
+                MIME=$(file --mime-type $pkg|cut -d ' ' -f2)
+                curl -X POST -H "Accept: application/vnd.github.v3+json" -H "Authorization: $TOKEN" -H "Content-Type: $MIME" --data-binary @$pkg $UPLOAD_URL?name=$NAME
+              done

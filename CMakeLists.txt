@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(Input
 	LANGUAGES CXX C
-	VERSION 1.14.0)
+	VERSION 1.15.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
